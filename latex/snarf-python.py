@@ -62,7 +62,7 @@ def translate_code(line):
 
     # This backstop makes sure we ensuremath any assignment 
     line = re.sub(r'(\s*)([^#:]*\\gets[^\w][^#;]*)',
-                  r'\1\ensuremath{\2}', line) 
+                  r'\1\\ensuremath{\2}', line) 
 
     # for _ in range(n) => repeat n times
     line = re.sub(r'for\s+_\s+in\s+range\s*\((\w+)\)', r'repeat \1 times', line)
@@ -92,22 +92,22 @@ def translate_code(line):
 
     # range(a,b,-1) => a,...,b+1
     line = re.sub(r'\brange\s*\(\s*(.*),\s*(.*),\s*-1\s*\)',
-                  r'\1,\1-1,\1-2,\ldots,\2+1', line)
+                  r'\1,\1-1,\1-2,\\ldots,\2+1', line)
 
     # range(a, b-1) => a,...,b-2
     #line = re.sub(r'\brange\s*\(\s*(.*),\s*(.*)\s*\-\s*1\s*\)', 
-    #              r'\1,\1+1,\1+2,\ldots,\2-2', line)
+    #              r'\1,\1+1,\1+2,\\ldots,\2-2', line)
 
     # range(a, b) => a,...,b-1
     line = re.sub(r'\brange\s*\(\s*(.*),\s*(.*)\s*\)', 
-                  r'\1,\1+1,\1+2,\ldots,\2-1', line)
+                  r'\1,\1+1,\1+2,\\ldots,\2-1', line)
 
     # range(a) => 0,...,a-1
     #re.sub(r'\brange\s*\(\s*([^),]+(\([^)]*\)[^)]*)?)\s*\)', 
-    line = re.sub(r'\brange\s*\((.*)\)', r'0,1,2,\ldots,\1-1', line)
+    line = re.sub(r'\brange\s*\((.*)\)', r'0,1,2,\\ldots,\1-1', line)
 
     # a[x:y] => a[x,x+1,\ldots,y-1]
-    line = re.sub(r'\[([^\]]+):([^\]]+)\]', r'[\ensuremath{\1,\1+1,\ldots,\2-1}]', line)
+    line = re.sub(r'\[([^\]]+):([^\]]+)\]', r'[\\ensuremath{\1,\1+1,\\ldots,\2-1}]', line)
     
     # some dumb arithmetic
     line = re.sub(r'\+\s*1\s*-\s*1', '', line)
@@ -130,10 +130,10 @@ def translate_code(line):
 
     # int(ceil(blah)) => \lceil{blah}\rceil
     line = re.sub(r'int\(ceil\((.+)\)\)', \
-                  r'\ensuremath{\left\lceil{\1}\\right\\rceil}', line)
+                  r'\\ensuremath{\\left\\lceil{\1}\\right\\rceil}', line)
 
     # int(sqrt(blah)) => \sqrt{blah}
-    line = re.sub(r'\bsqrt\((.+)\)', r'\sqrt{\1}', line)
+    line = re.sub(r'\bsqrt\((.+)\)', r'\\sqrt{\1}', line)
 
     # elif => else if
     line = re.sub(r'\belif\b', r'else if', line)
@@ -142,7 +142,7 @@ def translate_code(line):
     keywords = ['if', 'or', 'and', 'then', 'else', 'in', 'for', 'do', 'return',
                 'raise', 'while', 'break', 'repeat', 'times']
     keywords = r'\b(' + '|'.join(keywords) + r')\b'
-    line = re.sub(keywords, r'{\color{black} \\textbf{\1}}', line)
+    line = re.sub(keywords, r'{\\color{black} \\textbf{\1}}', line)
 
     # a is b => a == b (our code doesn't care about equality vs. identity
     line = re.sub(r'\bis\s+not\b', r'!=', line)
@@ -155,40 +155,40 @@ def translate_code(line):
     fncall = r'%s(\([^\)]*\))?' % basic
     indexed = r'%s(\[[^\]]+\])?' % fncall
     operand = r'(-?%s)' % indexed 
-    op = r'(,\\ldots,|&|>=|\.|,|//|<=|==|!=|=|\gets|%|<<|>>|<|>|\+|-|/|\*|\^|\&)'
+    op = r'(,\\ldots,|&|>=|\.|,|//|<=|==|!=|=|\\gets|%|<<|>>|<|>|\+|-|/|\*|\^|\&)'
     expr0 = r'(%s(\s*%s\s*%s)*)' % (operand, op, operand)
     parenexpr = r'(%s|\(%s\))' % (expr0, expr0)
     expr = r'(^|[^{\\])(%s(\s*%s\s*%s)*)' % (parenexpr, op, parenexpr)
-    line = re.sub(expr, r'\1\ensuremath{\2}', line)
+    line = re.sub(expr, r'\1\\ensuremath{\2}', line)
 
 
     # turn Python math operators into LaTeX math operators
     line = re.sub(r'>=', r'\\ge', line) 
-    line = re.sub(r'<=', r'\le', line)
+    line = re.sub(r'<=', r'\\le', line)
     line = re.sub(r'%', r'\\bmod ', line) 
-    line = re.sub(r'\*', r'\cdot ', line)
+    line = re.sub(r'\*', r'\\cdot ', line)
     line = re.sub(r'!=', r'\\ne', line)
-    line = re.sub(r'==', r'\eq', line) 
+    line = re.sub(r'==', r'\\eq', line) 
     line = re.sub(r'(^|[^\\])&', r'\1 \\wedge ', line)
     line = re.sub(r'//', r'\\bdiv ', line)
 
 
-    line = re.sub(r'\^', r'\ensuremath{\oplus}', line)
+    line = re.sub(r'\^', r'\\ensuremath{\\oplus}', line)
 
     # 1 << <blah> => 2^{<blah>}
     line = re.sub(r'\(?\s*1\s*<<\s*(\w+)\s*\)?', r'2^{\1}', line)
 
     # these are hacks and should eventually be fixed
-    line = re.sub(r'\>\>', r'\ensuremath{\\gg}', line) 
-    line = re.sub(r'\<\<', r'\ensuremath{\\ll}', line) 
+    line = re.sub(r'\>\>', r'\\ensuremath{\\gg}', line) 
+    line = re.sub(r'\<\<', r'\\ensuremath{\\ll}', line) 
 
     # del is a python keyword, but we have a variable called del in Ch. 5
-    line = re.sub(r'\bdl\b', r'\mathit{del}', line)
+    line = re.sub(r'\bdl\b', r'\\mathit{del}', line)
 
 
     # lowercase True and False
-    line = re.sub(r'True', r'\ensuremath{\mathit{true}}', line)
-    line = re.sub(r'False', r'\ensuremath{\mathit{false}}', line)
+    line = re.sub(r'True', r'\\ensuremath{\\mathit{true}}', line)
+    line = re.sub(r'False', r'\\ensuremath{\\mathit{false}}', line)
 
     # Camelcase variable names to underscores
     line = re.sub(r'\b([a-z_][a-z0-9_]*)([A-Z])', 
@@ -206,17 +206,17 @@ def translate_code(line):
     for i in range(3):   
         # This RE is delicate. It interacts with [1]
         line = re.sub(r'(^|[^\\\w])([a-z_][a-z0-9_]*)([^{}\w]|}?$)', \
-                r'\1\ensuremath{\mathit{\2}}\3', line)
+                r'\1\\ensuremath{\\mathit{\2}}\3', line)
                 
     # undo mathit for any keywords we accidentally hit
     line = re.sub(r'\\ensuremath{\\mathit{' + keywords + '}}', r'\1', line)
     
     # don't be afraid to use l as a variable name
-    line = re.sub(r'\bell\b', r'\ell', line)
-    line = re.sub(r'\bl\b', r'\ell', line)
+    line = re.sub(r'\bell\b', r'\\ell', line)
+    line = re.sub(r'\bl\b', r'\\ell', line)
     
     # typeset class names in mathrm
-    line = re.sub(r'([A-Z]\w+)', r'\mathrm{\1}', line)
+    line = re.sub(r'([A-Z]\w+)', r'\\mathrm{\1}', line)
 
     # remove leading underscores
     line = re.sub(r'\b_+(\w+)', r'\1', line)
@@ -232,13 +232,13 @@ def translate_code(line):
 
     # Some hex constants look better in binary
     #line = re.sub(r'\b0xff\b', '11111111_2', line)
-    line = re.sub(r'0x(\w+)\b', r'\mathrm{\1}_{16}', line)
+    line = re.sub(r'0x(\w+)\b', r'\\mathrm{\1}_{16}', line)
 
     # add comment back and escape hashes
     if comment:
         if not line.endswith(' '):
             line += r'\ '
-        line += r'{\color{comment}' + comment + '}'
+        line += r'{\\color{comment}' + comment + '}'
     line = re.sub(r'#', r'\#', line)
     return line
 
@@ -248,7 +248,7 @@ def touchup_code_line(line):
     if line == '': return line
 
     # 4 spaces => 1em
-    line = re.sub(r' {4}', r'\hspace*{1em} ', line)
+    line = re.sub(r' {4}', r'\\hspace*{1em} ', line)
 
     # add \\ at the end of each line
     line = re.sub(r'$', r'\\\\', line)
@@ -262,8 +262,8 @@ def print_code(clazz, methods):
     methods = [re.sub(r'([a-z])([A-Z])', r'\1_\2', s).lower() for s in methods]
     sys.stderr.write(str(methods) + '\n')
 
-    print [r'\begin{oframed}', r'\begin{leftbar}'][html]
-    print r'\begin{flushleft}'
+    print([r'\begin{oframed}', r'\begin{leftbar}'][html])
+    print(r'\begin{flushleft}')
     printed = False
     try:
         filename = "../python/ods/" + clazz.lower() + ".py"
@@ -274,23 +274,23 @@ def print_code(clazz, methods):
                 printing = line == '' or line.startswith(indent)
             if not printing and matches(line, methods):
                 indent = re.match(r'\s*', line).group(0) + '    '
-                if printed: print '\\ \\\\' # to add space between methods
+                if printed: print('\\ \\\\') # to add space between methods
                 printing = True
             if printing and len(line.strip()) > 0:
                 printed = True
                 if len(indent) == 4:
                     line = '    ' + line
-                print touchup_code_line(translate_code(line))
+                print(touchup_code_line(translate_code(line)))
     except IOError:
-        print "Unable to open %s" % filename
+        print("Unable to open %s" % filename)
     if not printed: 
-        print r'NO OUTPUT (looking for \verb+' + str(methods) + "+)"
-    print r'\end{flushleft}'
-    print [r'\end{oframed}', r'\end{leftbar}'][html]
+        print(r'NO OUTPUT (looking for \verb+' + str(methods) + "+)")
+    print(r'\end{flushleft}')
+    print([r'\end{oframed}', r'\end{leftbar}'][html])
 
 
 def fig_subs(line):
-    return re.sub(r'(\includegraphics\[[^\]]*\]){figs/', 
+    return re.sub(r'(\\includegraphics\[[^\]]*\]){figs/', 
                   r'\1{figs-python/', line)
 
 def code_subs(line):
@@ -312,12 +312,12 @@ def snarf(infile):
     """Program entry point"""
     lines = infile.read().splitlines();
     for line in lines:
-        if line.startswith(r'\cppimport') \
-                or line.startswith(r'\javaimport'):
-            print "%%%s" % line
+        if line.startswith(r'\\cppimport') \
+                or line.startswith(r'\\javaimport'):
+            print("%%%s" % line)
         elif line.startswith('\\codeimport') \
-                or line.startswith(r'\pcodeimport'):
-            print "%%importing %s: " % line
+                or line.startswith(r'\\pcodeimport'):
+            print("%%importing %s: " % line)
             m = re.search(r'\{\w+/(\w+)(.*)\}', line)
             clazz = m.group(1)
             methods = m.group(2).lstrip('.').split('.')
@@ -329,7 +329,7 @@ def snarf(infile):
                               % (methods, clazz))
             print_code(clazz, methods)
         else:
-            print code_subs(fig_subs(line))
+            print(code_subs(fig_subs(line)))
 
 
 def die(msg, code=-1):
