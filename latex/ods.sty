@@ -230,13 +230,14 @@
     \setlength{\lone}{0.3\textheight}
     \setlength{\ltwo}{0.618033988\lone}
     \setlength{\lthree}{0.618033988\ltwo}
+    \bfseries\sffamily
     \begin{flushleft}
       \ \\[.1\paperheight]
       \includegraphics[width=\linewidth]{images/tree3-thick}\\
-      {\fontsize{21}{1}\usefont{OT1}{jkpss}{b}{n}%
+      {\Huge\bfseries\sffamily%
        \resizebox{\linewidth}{!}{\thetitle}} \\[\lthree]
-      {\fontsize{14}{1}\usefont{OT1}{jkpss}{b}{n}\thedate} \\[\lthree]
-      {\fontsize{11}{1}\usefont{OT1}{jkpss}{b}{n}\theauthor} \\[\lthree]
+      {\large\thedate} \\[\lthree]
+      {\Large\theauthor} \\[\lthree]
       \includegraphics[scale=0.5]{images/cc-by}
     \end{flushleft}
   \end{titlepage}
